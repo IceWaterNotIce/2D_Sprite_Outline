@@ -36,7 +36,7 @@ public static class SpriteOutlineHelper
 
         foreach (Transform child in target.transform)
         {
-            if (child.name == "Outline")
+            if (child.name == "Outline" || child.name == "TempOutline")
             {
                 GameObject.Destroy(child.gameObject);
             }
@@ -48,14 +48,14 @@ public static class SpriteOutlineHelper
     {
         if (target == null) return;
 
-        // 確保目標有 Collider2D（用於滑鼠檢測）
+        // 確保目標有 Collider2D
         if (target.GetComponent<Collider2D>() == null)
         {
             Debug.LogWarning("Target needs a Collider2D for mouse interaction!");
-            target.AddComponent<BoxCollider2D>(); // 自動添加一個簡單的 Collider
+            target.AddComponent<BoxCollider2D>();
         }
 
-        // 添加 MonoBehaviour 組件來處理滑鼠事件
+        // 添加或取得 HighlightBehaviour 組件
         HighlightBehaviour behaviour = target.GetComponent<HighlightBehaviour>();
         if (behaviour == null)
         {
@@ -63,6 +63,26 @@ public static class SpriteOutlineHelper
         }
 
         behaviour.SetHighlightSettings(highlightColor, outlineSize);
+        behaviour.enabled = true; // 確保組件啟用
+    }
+
+    // 新增靜態方法：移除滑鼠懸停高亮效果
+    public static void RemoveMouseOverHighlight(GameObject target)
+    {
+        if (target == null) return;
+
+        HighlightBehaviour behaviour = target.GetComponent<HighlightBehaviour>();
+        if (behaviour != null)
+        {
+            // 強制清除當前可能存在的臨時外框
+            behaviour.ForceRemoveOutline();
+            
+            // 禁用組件（保留組件但不再響應滑鼠事件）
+            behaviour.enabled = false;
+            
+            // 若想完全移除組件，改用以下行：
+            // GameObject.Destroy(behaviour);
+        }
     }
 }
 
@@ -81,7 +101,6 @@ internal class HighlightBehaviour : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        // 滑鼠進入時添加外框
         currentOutline = new GameObject("TempOutline");
         currentOutline.transform.parent = transform;
         currentOutline.transform.localScale = Vector3.one * (1 + outlineSize);
@@ -95,10 +114,20 @@ internal class HighlightBehaviour : MonoBehaviour
 
     private void OnMouseExit()
     {
-        // 滑鼠離開時移除外框
         if (currentOutline != null)
         {
             Destroy(currentOutline);
+            currentOutline = null;
+        }
+    }
+
+    // 新增方法：強制移除外框（供外部呼叫）
+    public void ForceRemoveOutline()
+    {
+        if (currentOutline != null)
+        {
+            Destroy(currentOutline);
+            currentOutline = null;
         }
     }
 }
