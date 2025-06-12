@@ -8,7 +8,7 @@ public class Lab_2D_Sprite_Outline : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        SpriteOutlineHelper.AddOutline(spriteRenderer, outlineColor, outlineSize);
+        SpriteOutlineHelper.AddMouseOverHighlight(spriteRenderer, outlineColor, outlineSize);
     }
 
     // Update is called once per frame
